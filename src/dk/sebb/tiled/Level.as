@@ -7,6 +7,7 @@ package dk.sebb.tiled
 	import dk.sebb.tiled.layers.ObjectLayer;
 	import dk.sebb.tiled.layers.TMXObject;
 	import dk.sebb.tiled.mobs.Mob;
+	import dk.sebb.tiled.mobs.NPC;
 	import dk.sebb.tiled.mobs.ObjMob;
 	import dk.sebb.tiled.mobs.Player;
 	import dk.sebb.tiled.mobs.TileMob;
@@ -15,8 +16,10 @@ package dk.sebb.tiled
 	import flash.events.Event;
 	import flash.events.EventDispatcher;
 	import flash.events.IEventDispatcher;
+	import flash.events.KeyboardEvent;
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
+	import flash.ui.Keyboard;
 	
 	import luaAlchemy.LuaAlchemy;
 	
@@ -77,8 +80,26 @@ package dk.sebb.tiled
 				addChild(debug.display);
 			}
 			
+			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			
 			//start the game!
 			addEventListener(Event.ENTER_FRAME, run);
+		}
+		
+		public function onKeyUp(evt:KeyboardEvent):void {
+			if(evt.keyCode === Keyboard.SPACE) {
+				for each(var mob:Mob in data.mobs) {
+					if(mob is NPC && NPC(mob).playerInProximity && NPC(mob).object.onActivate) {
+						Level.lua.doString(NPC(mob).object.onActivate);
+						return;
+					}
+				}
+				
+				Level.unPause();
+				infoBox.visible = false;
+				infoBox.currentConvo = "";
+			}
 		}
 		
 		public static function pause():void {

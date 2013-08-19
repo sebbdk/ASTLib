@@ -86,7 +86,7 @@ package dk.sebb.tiled
 				if(object.type) {
 					switch(object.type) {
 						case 'playerspawn':
-							spawns.push(new Vec2(object.x, object.y));
+							spawns.push(new Vec2(object.x + (object.width/2), object.y + (object.height/2)));
 							break;
 						case 'detector':
 							var objDet:ObjMob = new ObjMob(object, true);
@@ -97,7 +97,7 @@ package dk.sebb.tiled
 							break;
 						case 'npc':
 							trace("NPC found! now create it!");
-							var npc:NPC = new NPC();
+							var npc:NPC = new NPC(object);
 							npc.body.position.x = object.x + (object.width/2);
 							npc.body.position.y = object.y + (object.height/2);
 							npc.body.space = Level.space;

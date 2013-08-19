@@ -11,8 +11,9 @@ package dk.sebb.tiled
 	{
 		public var field:TextField;
 		public var bg:Sprite = new Sprite();
-		
 		private var format:TextFormat;
+		
+		public var currentConvo:String = "";
 		
 		public function InfoBox()
 		{
@@ -33,20 +34,8 @@ package dk.sebb.tiled
 			addChild(field);
 			
 			x = 10;
-			
-			addEventListener(Event.ADDED_TO_STAGE, onAddedToStage);
 		}
-		
-		public function onAddedToStage(evt:Event):void {
-			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
-		}
-		
-		public function onKeyUp(evt:KeyboardEvent):void {
-			if(evt.keyCode === Keyboard.SPACE && Level.settings.pause === true) {
-				Level.unPause();
-				visible = false;
-			}
-		}
+
 		
 		/**
 		 * Loads a conversation
@@ -56,7 +45,8 @@ package dk.sebb.tiled
 		 * */
 		public function convo(id:String, pause:Boolean = true):void {
 			trace('Initiate convo with id:', id, pause);
-			if(Level.data.conversations && Level.data.conversations[id]) {
+			if(Level.data.conversations && Level.data.conversations[id] && id != currentConvo) {
+				trace("OPEN INFO!");
 				var lines:String = "";
 				for each(var stmtnt:Object in Level.data.conversations[id].statements) {
 					lines += Level.data.people[stmtnt.person].name + ": " + stmtnt.text + "\n";
@@ -64,6 +54,11 @@ package dk.sebb.tiled
 				
 				Level.pause();
 				write(lines);
+				currentConvo = id;
+			} else {
+				currentConvo = "";
+				Level.unPause();
+				visible = false;
 			}
 		}
 		
