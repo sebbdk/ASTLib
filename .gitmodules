@@ -1,0 +1,3 @@
+[submodule "lib/AS3TMXLoader"]
+	path = lib/AS3TMXLoader
+	url = git@github.com:sebbdk/AS3TMXLoader.git
