@@ -20,11 +20,11 @@ package
 	import org.osmf.layout.ScaleMode;
 	
 	[SWF(backgroundColor="#999999", frameRate="48", height="600", width="800", quality="HIGH")]
-	public class Cheesed extends Sprite
+	public class Main extends Sprite
 	{
 		public var level:Level;
 		
-		public function Cheesed()
+		public function Main()
 		{			
 			stage.scaleMode = StageScaleMode.EXACT_FIT;
 			Key.init(stage);
