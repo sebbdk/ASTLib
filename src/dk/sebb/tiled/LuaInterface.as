@@ -32,7 +32,7 @@ package dk.sebb.tiled
 			Level.infoBox.convo(id, pause);
 		}
 		
-		public static function shake(magnitude:int = 5, delay:int = 1/30, repeatCount:int = 40):void {
+		public static function shake(magnitude:int = 5, delay:Number = 1/30, repeatCount:int = 40):void {
 			Level.instance.screenShake.start(magnitude, delay, repeatCount);
 		}
 		

@@ -1,27 +1,14 @@
 package
 {
-	import dk.sebb.tiled.InfoBox;
-	import dk.sebb.tiled.Level;
-	import dk.sebb.tiled.TMXLoader;
-	import dk.sebb.tiled.layers.Layer;
-	import dk.sebb.util.Key;
-	
-	import flash.display.Bitmap;
 	import flash.display.Sprite;
 	import flash.display.StageScaleMode;
-	import flash.events.Event;
 	import flash.events.KeyboardEvent;
 	import flash.ui.Keyboard;
-	import flash.utils.setInterval;
-	import flash.utils.setTimeout;
 	
-	import luaAlchemy.LuaAlchemy;
+	import dk.sebb.tiled.Level;
+	import dk.sebb.util.Key;
 	
-	import nape.util.ShapeDebug;
-	
-	import org.osmf.layout.ScaleMode;
-	
-	[SWF(backgroundColor="#999999", frameRate="30", height="600", width="800", quality="HIGH")]
+	[SWF(backgroundColor="#999999", frameRate="60", height="600", width="800", quality="HIGH")]
 	public class Main extends Sprite
 	{
 		public var levelindex:int = -1;

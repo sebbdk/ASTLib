@@ -1,15 +1,11 @@
 package dk.sebb.tiled.mobs
 {
+	import flash.display.DisplayObject;
+	import flash.ui.Keyboard;
+	
 	import Anime.charAnimation;
 	
 	import dk.sebb.util.Key;
-	
-	import flash.display.DisplayObject;
-	import flash.display.MovieClip;
-	import flash.display.Shape;
-	import flash.ui.Keyboard;
-	
-	import flashx.textLayout.utils.CharacterUtil;
 	
 	import nape.callbacks.CbType;
 	import nape.geom.Vec2;
