@@ -69,7 +69,7 @@ package dk.sebb.tiled.mobs
 			var kx:int = 0;
 			var ky:int = 0;
 			
-			var vel:int = 40;
+			var vel:int = 80;
 			
 			if(Key.isDown(Keyboard.D)) {
 				kx += vel;

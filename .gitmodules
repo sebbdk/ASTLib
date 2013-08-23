@@ -1,3 +1,6 @@
 [submodule "lib/AS3TMXLoader"]
 	path = lib/AS3TMXLoader
 	url = git@github.com:sebbdk/AS3TMXLoader.git
+[submodule "lib/Hi-res-Stats"]
+	path = lib/Hi-res-Stats
+	url = https://github.com/mrdoob/Hi-ReS-Stats.git

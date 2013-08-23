@@ -18,11 +18,22 @@ package dk.sebb.tiled
 					pause = pause or true;
 					as3.class.dk.sebb.tiled.LuaInterface.convo(id, pause);
 				end
+				
+				function shake(magnitude, delay, repeatCount)
+					magnitude = magnitude or 5;
+					delay = delay or 1/30;
+					repeatCount = repeatCount or 40;
+					as3.class.dk.sebb.tiled.LuaInterface.shake(magnitude, delay, repeatCount);
+				end
 			]]>).toString() );
 		}
-		
+
 		public static function convo(id:String, pause:Boolean = true):void {
 			Level.infoBox.convo(id, pause);
+		}
+		
+		public static function shake(magnitude:int = 5, delay:int = 1/30, repeatCount:int = 40):void {
+			Level.instance.screenShake.start(magnitude, delay, repeatCount);
 		}
 		
 		public static function say(str:String):void {

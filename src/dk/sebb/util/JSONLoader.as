@@ -23,6 +23,8 @@ package dk.sebb.util
 		}
 		
 		public function onJSONLoaded(evt:Event):void {
+			loader.removeEventListener(Event.COMPLETE, onJSONLoaded);
+
 			data = JSON.parse(evt.target.data);
 			dispatchEvent(evt);
 		}

@@ -34,14 +34,31 @@ package dk.sebb.tiled
 			
 			tmxLoader = new TMXLoader(basePath + "level.tmx");
 			tmxLoader.addEventListener(Event.COMPLETE, onTMXLoaded);
-			
 		}
 		
 		public function load():void {
 			tmxLoader.load();
 		}
 		
+		public function unload():void {
+			mobs = null;
+			spawns = null;
+			parallaxLayers = null;
+			
+			for each(var mob:Mob in mobs) {
+				mob.body.space = null;
+			}
+		}
+		
+		
+		///
+		//
+		// debug nape ?!!??!
+		//
+		//
+		
 		public function onTMXLoaded(evt:Event):void {
+			tmxLoader.removeEventListener(Event.COMPLETE, onTMXLoaded);
 			//get object layers
 			for each(var layer:Layer in tmxLoader.layers) {
 				if(layer.parallax) {
@@ -71,6 +88,8 @@ package dk.sebb.tiled
 		}
 		
 		public function onDataLoaded(evt:Event):void {
+			dataLoader.removeEventListener(Event.COMPLETE, onDataLoaded);
+
 			for(var attr:String in dataLoader.data) {
 				this[attr] = dataLoader.data[attr];
 			}
@@ -92,16 +111,14 @@ package dk.sebb.tiled
 							var objDet:ObjMob = new ObjMob(object, true);
 							objDet.body.position.x = object.x + (object.width/2);
 							objDet.body.position.y = object.y + (object.height/2);
-							objDet.body.space = Level.space;
-							mobs.push(objDet);
+							addMob(objDet);
 							break;
 						case 'npc':
 							trace("NPC found! now create it!");
 							var npc:NPC = new NPC(object);
 							npc.body.position.x = object.x + (object.width/2);
 							npc.body.position.y = object.y + (object.height/2);
-							npc.body.space = Level.space;
-							mobs.push(npc);
+							addMob(npc);
 							break;
 						default:
 							trace("unknow  object type (" + object.type + ") found in level!");
@@ -109,6 +126,11 @@ package dk.sebb.tiled
 					}
 				}
 			}
+		}
+		
+		public function addMob(mob:Mob):void {
+			mob.body.space = Level.space;
+			mobs.push(mob);
 		}
 		
 		/**
@@ -132,8 +154,7 @@ package dk.sebb.tiled
 							var tileMob:Mob = new TileMob(BodyType.STATIC);
 							tileMob.body.position.x = 32 * spriteForX + 16;
 							tileMob.body.position.y = 32 * spriteForY + 16;
-							
-							mobs.push(tileMob);
+							addMob(tileMob);
 							layer.displayObject.addChild(tileMob);
 						}
 					}

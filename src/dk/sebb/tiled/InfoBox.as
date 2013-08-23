@@ -13,7 +13,10 @@ package dk.sebb.tiled
 		public var bg:Sprite = new Sprite();
 		private var format:TextFormat;
 		
+		public var hasConvo:Boolean = false;
+		
 		public var currentConvo:String = "";
+		public var currentConvoIndex:int = 0;
 		
 		public function InfoBox()
 		{
@@ -44,6 +47,21 @@ package dk.sebb.tiled
 		 * pause: wether or not to pause the game while the conversation takes place
 		 * */
 		public function convo(id:String, pause:Boolean = true):void {
+			if(Level.data.conversations[id]) {
+				hasConvo = true;
+				visible = true;
+				currentConvo = id;
+				currentConvoIndex = 0;
+				Level.pause();
+
+				convoNext();
+			} else {
+				trace('tried to init none existant conversation "' + id + '"');	
+			}
+			
+			
+			/*
+			return;
 			trace('Initiate convo with id:', id, pause);
 			if(Level.data.conversations && Level.data.conversations[id] && id != currentConvo) {
 				trace("OPEN INFO!");
@@ -60,10 +78,27 @@ package dk.sebb.tiled
 				Level.unPause();
 				visible = false;
 			}
+			*/
+		}
+		
+		public function convoNext():void {
+			if(currentConvo !== "" && Level.data.conversations[currentConvo]) {
+				var stmtnt:Object = Level.data.conversations[currentConvo].statements[currentConvoIndex];
+				if(stmtnt) {
+					hasConvo = true;
+					write(Level.data.people[stmtnt.person].name + ": " + stmtnt.text + "\n");
+					currentConvoIndex++;
+				} else {
+					hasConvo = false;
+					visible = false;
+					currentConvo = "";
+					currentConvoIndex = 0;
+					Level.unPause();
+				}
+			}
 		}
 		
 		public function write(text:String):void {
-			trace("write!", this.parent);
 			visible = true;
 			var lineCount:int = text.split('\n').length;
 			

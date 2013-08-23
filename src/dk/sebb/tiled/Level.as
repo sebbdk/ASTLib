@@ -11,6 +11,7 @@ package dk.sebb.tiled
 	import dk.sebb.tiled.mobs.ObjMob;
 	import dk.sebb.tiled.mobs.Player;
 	import dk.sebb.tiled.mobs.TileMob;
+	import dk.sebb.util.ShakeEffect;
 	
 	import flash.display.MovieClip;
 	import flash.events.Event;
@@ -20,6 +21,7 @@ package dk.sebb.tiled
 	import flash.geom.Point;
 	import flash.geom.Rectangle;
 	import flash.ui.Keyboard;
+	import flash.utils.getTimer;
 	
 	import luaAlchemy.LuaAlchemy;
 	
@@ -29,46 +31,60 @@ package dk.sebb.tiled
 	import nape.space.Space;
 	import nape.util.ShapeDebug;
 	
+	import net.hires.debug.Stats;
+	
 	public class Level extends MovieClip
 	{
 		public var debug:ShapeDebug;
+		public var lastFrameTime:Number = 0;
 		
 		public static var data:LevelData;
 		public static var space:Space = new Space(new Vec2(0, 0));
 		public static var lua:LuaInterface = new LuaInterface();
 		public static var infoBox:InfoBox = new InfoBox();
 		public static var player:Player;
+
+		public var screenShake:ShakeEffect;
+		
+		public static var instance:Level;
 		
 		public static var settings:Object = {
 			debug:true,
 			pause:false
 		};
 		
-		public function Level() {
-			data = new LevelData("../levels/demo_001_basic/");
-			data.addEventListener(Event.COMPLETE, start);
-			data.load();
+		public function Level() {			
+			screenShake = new ShakeEffect();
 			
 			scaleX = 2;
 			scaleY = 2;
+			
+			instance = this;
 		}
 		
-		public function start(evt:Event):void {
+		public function load(levelpath:String):void {
+			unload();
+
+			space.clear();
+			data = new LevelData(levelpath);
+			data.addEventListener(Event.COMPLETE, onLevelLoaded);
+			data.load();
+		}
+		
+		public function onLevelLoaded(evt:Event):void {
 			//add layers!
 			for each(var layer:Layer in data.tmxLoader.layers) {
-				//layer.displayObject.alpha = 0.3; //HERE!
 				addChild(layer.displayObject);
 			}
 			
 			//setup player
-			player = new Player();
+			player = player ? player:new Player();
 			player.body.position = data.spawns[0];
-			data.mobs.push(player);
-			addMob(player);
+			data.addMob(player);
 			
 			//setup mobs
 			for each(var mob:Mob in data.mobs) {
-				addMob(mob);
+				addChild(mob);
 			}
 			
 			//setup info box
@@ -80,26 +96,46 @@ package dk.sebb.tiled
 				addChild(debug.display);
 			}
 			
-			stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			//debug
+			if(settings.debug) {
+				parent.addChild(new Stats());
+			}
+			
 			stage.addEventListener(KeyboardEvent.KEY_UP, onKeyUp);
 			
 			//start the game!
 			addEventListener(Event.ENTER_FRAME, run);
+			settings.pause = false;
+		}
+		
+		public function unload():void {
+			settings.pause = true;
+			if(stage) {
+				stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyUp);
+			}
+
+			removeEventListener(Event.ENTER_FRAME, run);
+			removeChildren();
+			
+			if(data) {
+				data.unload();
+				data = null;
+			}
 		}
 		
 		public function onKeyUp(evt:KeyboardEvent):void {
 			if(evt.keyCode === Keyboard.SPACE) {
-				for each(var mob:Mob in data.mobs) {
-					if(mob is NPC && NPC(mob).playerInProximity && NPC(mob).object.onActivate) {
-						Level.lua.doString(NPC(mob).object.onActivate);
-						return;
+				if(infoBox.hasConvo) {//the info box takes over input when active
+					infoBox.convoNext();
+				} else {//else just check mobs
+					for each(var mob:Mob in data.mobs) {
+						if(mob is NPC && NPC(mob).playerInProximity && NPC(mob).object.onActivate) {
+							Level.lua.doString(NPC(mob).object.onActivate);
+							return;
+						}
 					}
 				}
-				
-				Level.unPause();
-				infoBox.visible = false;
-				infoBox.currentConvo = "";
-			}
+			}		
 		}
 		
 		public static function pause():void {
@@ -118,38 +154,37 @@ package dk.sebb.tiled
 		}
 		
 		public function run(evt:Event = null):void {
-			if(settings.pause) {
-				return;
+			var deltaTime:Number = (getTimer() - lastFrameTime) / (1000/30);
+			if(!settings.pause && deltaTime > 1) {
+				//FIXX ME!
+				space.step((1/30) * deltaTime, 10, 10);
+				
+				for each(var mob:Mob in data.mobs) {
+					mob.update();
+				}
+				
+				if(debug) {
+					debug.clear();
+					debug.draw(space);
+				}
+				
+				//move "camera" onto player
+				x = (-(player.body.position.x * scaleX) + stage.stageWidth/2) + screenShake.offSetX;
+				y = (-(player.body.position.y * scaleY) + stage.stageHeight/2) + screenShake.offSetY;
+					
+				//update parallax
+				for each(var layer:Layer in data.parallaxLayers) {
+					var playerRatioX:Number = (player.body.position.x * scaleX) / (layer.displayObject.width * scaleX);
+					layer.displayObject.x = ((this.width/2) * playerRatioX) * layer.offsetX;
+					
+					var playerRatioY:Number = (player.body.position.y * scaleY) / (layer.displayObject.height * scaleY);
+					layer.displayObject.y = ((this.height/2) * playerRatioY) * layer.offsetY;
+				}
 			}
+			if(deltaTime > 1) {
+				lastFrameTime = getTimer();
+			}
+		}
 
-			space.step((1/30), 10, 10);
-			
-			for each(var mob:Mob in data.mobs) {
-				mob.update();
-			}
-			
-			if(debug) {
-				debug.clear();
-				debug.draw(space);
-			}
-			
-			//move "camera" onto player
-			x = -(player.body.position.x * scaleX) + stage.stageWidth/2
-			y = -(player.body.position.y * scaleY) + stage.stageHeight/2
-				
-			//update parallax
-			for each(var layer:Layer in data.parallaxLayers) {
-				var playerRatioX:Number = (player.body.position.x * scaleX) / (layer.displayObject.width * scaleX);
-				layer.displayObject.x = ((this.width/2) * playerRatioX) * layer.offsetX;
-				
-				var playerRatioY:Number = (player.body.position.y * scaleY) / (layer.displayObject.height * scaleY);
-				layer.displayObject.y = ((this.height/2) * playerRatioY) * layer.offsetY;
-			}
-		}
-		
-		public function addMob(mob:Mob):void {
-			mob.body.space = space;
-			addChild(mob);
-		}
 	}
 }
